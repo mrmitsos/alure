@@ -2,6 +2,10 @@ const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const Booking = require("../models/Booking");
 const Payment = require("../models/Payment");
 const Property = require("../models/Property");
+const User = require("../models/User");
+const { Resend } = require("resend");
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 // @route POST /api/payments/create-checkout-session
 // @access Guest only
@@ -79,7 +83,7 @@ const stripeWebhook = async (req, res) => {
       ).populate("property");
 
       if (booking) {
-        // Update booking status
+        // Auto confirm after successful payment
         booking.status = "confirmed";
         booking.paymentStatus = "paid";
         booking.paymentId = session.payment_intent;
@@ -102,6 +106,126 @@ const stripeWebhook = async (req, res) => {
           currency: "eur",
           stripePaymentIntentId: session.payment_intent,
           status: "completed",
+        });
+
+        // Send confirmation email to guest
+        const guest = await User.findById(session.metadata.guestId);
+        const property = booking.property;
+
+        const checkInFormatted = booking.checkIn.toLocaleDateString("en-GB", {
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        });
+        const checkOutFormatted = booking.checkOut.toLocaleDateString("en-GB", {
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        });
+
+        const nights = Math.ceil(
+          (booking.checkOut - booking.checkIn) / (1000 * 60 * 60 * 24),
+        );
+
+        // Email to guest
+        await resend.emails.send({
+          from: "Alure <onboarding@resend.dev>",
+          to: guest.email,
+          subject: `Payment Confirmed — ${property.title} ✅`,
+          html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1e293b;">
+            <div style="background: #1e293b; padding: 32px; text-align: center;">
+              <h1 style="color: white; margin: 0; font-size: 24px;">Payment Confirmed! ✅</h1>
+            </div>
+            <div style="padding: 32px;">
+              <p>Hi <strong>${guest.name}</strong>,</p>
+              <p>Your payment was successful and your booking is now <strong>confirmed</strong>!</p>
+
+              <div style="background: #f8fafc; border-radius: 12px; padding: 24px; margin: 24px 0;">
+                <h2 style="margin: 0 0 16px; font-size: 18px;">${property.title}</h2>
+                <p style="margin: 0; color: #64748b; font-size: 14px;">
+                  📍 ${property.location.city}, ${property.location.region}
+                </p>
+                <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 16px 0;" />
+                <table style="width: 100%; font-size: 14px;">
+                  <tr>
+                    <td style="color: #64748b; padding: 4px 0;">Check In</td>
+                    <td style="font-weight: bold; text-align: right;">${checkInFormatted}</td>
+                  </tr>
+                  <tr>
+                    <td style="color: #64748b; padding: 4px 0;">Check Out</td>
+                    <td style="font-weight: bold; text-align: right;">${checkOutFormatted}</td>
+                  </tr>
+                  <tr>
+                    <td style="color: #64748b; padding: 4px 0;">Nights</td>
+                    <td style="font-weight: bold; text-align: right;">${nights}</td>
+                  </tr>
+                  <tr>
+                    <td style="color: #64748b; padding: 4px 0; border-top: 1px solid #e2e8f0;">Total Paid</td>
+                    <td style="font-weight: bold; text-align: right; border-top: 1px solid #e2e8f0;">€${booking.totalPrice}</td>
+                  </tr>
+                </table>
+              </div>
+
+              <p style="color: #64748b; font-size: 14px;">
+                We look forward to welcoming you! 🏔️🏝️
+              </p>
+              <p style="color: #64748b; font-size: 14px;">The Alure Team</p>
+            </div>
+          </div>
+        `,
+        });
+
+        // Email to host
+        await resend.emails.send({
+          from: "Alure <onboarding@resend.dev>",
+          to: property.host.email,
+          subject: `Booking Confirmed + Payment Received — ${property.title} 💰`,
+          html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1e293b;">
+            <div style="background: #1e293b; padding: 32px; text-align: center;">
+              <h1 style="color: white; margin: 0; font-size: 24px;">Payment Received! 💰</h1>
+            </div>
+            <div style="padding: 32px;">
+              <p>Hi <strong>${property.host.name}</strong>,</p>
+              <p>A booking for <strong>${property.title}</strong> has been confirmed and payment received.</p>
+
+              <div style="background: #f8fafc; border-radius: 12px; padding: 24px; margin: 24px 0;">
+                <table style="width: 100%; font-size: 14px;">
+                  <tr>
+                    <td style="color: #64748b; padding: 4px 0;">Guest</td>
+                    <td style="font-weight: bold; text-align: right;">${guest.name}</td>
+                  </tr>
+                  <tr>
+                    <td style="color: #64748b; padding: 4px 0;">Check In</td>
+                    <td style="font-weight: bold; text-align: right;">${checkInFormatted}</td>
+                  </tr>
+                  <tr>
+                    <td style="color: #64748b; padding: 4px 0;">Check Out</td>
+                    <td style="font-weight: bold; text-align: right;">${checkOutFormatted}</td>
+                  </tr>
+                  <tr>
+                    <td style="color: #64748b; padding: 4px 0;">Total Amount</td>
+                    <td style="font-weight: bold; text-align: right;">€${booking.totalPrice}</td>
+                  </tr>
+                  <tr>
+                    <td style="color: #64748b; padding: 4px 0;">Platform Fee</td>
+                    <td style="font-weight: bold; text-align: right; color: #ef4444;">-€${platformFee}</td>
+                  </tr>
+                  <tr>
+                    <td style="color: #64748b; padding: 4px 0; border-top: 1px solid #e2e8f0;">Your Payout</td>
+                    <td style="font-weight: bold; text-align: right; border-top: 1px solid #e2e8f0; color: #22c55e;">€${hostPayout}</td>
+                  </tr>
+                </table>
+              </div>
+
+              <p style="color: #64748b; font-size: 14px;">
+                Log in to your dashboard to manage this booking.
+              </p>
+              <p style="color: #64748b; font-size: 14px;">The Alure Team</p>
+            </div>
+          </div>
+        `,
         });
       }
     } catch (err) {

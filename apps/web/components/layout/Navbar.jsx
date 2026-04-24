@@ -207,9 +207,12 @@ export default function Navbar() {
               >
                 {user ? (
                   <div className="space-y-6">
-                    <p className="text-xl font-light italic text-slate-600">
-                      Member: {user.name}
-                    </p>
+                    <Link
+                      href="/profile"
+                      className="text-sm text-slate-600 hover:text-slate-900 transition-colors"
+                    >
+                      Hi, {user.name}
+                    </Link>
                     <button
                       onClick={handleLogout}
                       className="text-red-500 text-[10px] uppercase tracking-[0.3em] font-bold border-b border-red-200 pb-1"

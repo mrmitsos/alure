@@ -112,9 +112,12 @@ export default function Navbar() {
               {mounted &&
                 (user ? (
                   <div className="flex items-center gap-6">
-                    <span className="text-[10px] uppercase tracking-widest text-slate-400 italic">
-                      {user.name}
-                    </span>
+                    <Link
+                      href="/profile"
+                      className="text-sm text-slate-600 hover:text-slate-900 transition-colors"
+                    >
+                      Hi, {user.name}
+                    </Link>
                     <button
                       onClick={handleLogout}
                       className="text-slate-500 hover:text-red-600 transition-colors"
@@ -207,12 +210,9 @@ export default function Navbar() {
               >
                 {user ? (
                   <div className="space-y-6">
-                    <Link
-                      href="/profile"
-                      className="text-sm text-slate-600 hover:text-slate-900 transition-colors"
-                    >
-                      Hi, {user.name}
-                    </Link>
+                    <p className="text-xl font-light italic text-slate-600">
+                      Member: {user.name}
+                    </p>
                     <button
                       onClick={handleLogout}
                       className="text-red-500 text-[10px] uppercase tracking-[0.3em] font-bold border-b border-red-200 pb-1"

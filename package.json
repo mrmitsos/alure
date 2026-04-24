@@ -1,0 +1,13 @@
+{
+  "name": "alure",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "server"
+  ],
+  "scripts": {
+    "web": "npm run dev --workspace=apps/web",
+    "dashboard": "npm run dev --workspace=apps/dashboard",
+    "server": "npm run dev --workspace=server"
+  }
+}

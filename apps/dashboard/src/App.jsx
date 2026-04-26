@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import useAuthStore from './store/authStore'
 import DashboardLayout from './components/layout/DashboardLayout'
@@ -6,8 +7,8 @@ import OverviewPage from './pages/OverviewPage'
 import PropertiesPage from './pages/PropertiesPage'
 import BookingsPage from './pages/BookingsPage'
 import AnalyticsPage from './pages/AnalyticsPage'
+import Loader from './components/Loader'
 
-// Protected route wrapper
 const ProtectedRoute = ({ children }) => {
   const { token } = useAuthStore()
   if (!token) return <Navigate to="/login" replace />
@@ -15,6 +16,15 @@ const ProtectedRoute = ({ children }) => {
 }
 
 function App() {
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    const timer = setTimeout(() => setMounted(true), 800)
+    return () => clearTimeout(timer)
+  }, [])
+
+  if (!mounted) return <Loader />
+
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />

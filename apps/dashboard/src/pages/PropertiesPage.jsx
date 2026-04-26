@@ -11,6 +11,7 @@ import {
   Users,
   EuroIcon,
 } from "lucide-react";
+import Loader from '../components/Loader'
 
 // ── Brand Badge ───────────────────────────────────────────────────────────────
 const BrandBadge = ({ brand }) =>
@@ -523,12 +524,7 @@ export default function PropertiesPage() {
       ? properties
       : properties.filter((p) => p.brand === filter);
 
-  if (loading)
-    return (
-      <div className="p-8 flex items-center justify-center h-full">
-        <div className="text-slate-400">Loading properties...</div>
-      </div>
-    );
+if (loading) return <Loader />
 
   return (
     <div className="p-8">

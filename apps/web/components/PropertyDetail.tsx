@@ -21,6 +21,7 @@ import useAuthStore from "@/store/authStore";
 import { DayPicker, DateRange } from "react-day-picker";
 import { format, differenceInCalendarDays } from "date-fns";
 import "react-day-picker/dist/style.css";
+import Loader from "./Loader";
 
 const calendarStyles = `
   .rdp { --rdp-cell-size: 40px; margin: 0; font-family: inherit; }
@@ -157,14 +158,7 @@ export default function PropertyDetail({ id }: { id: string }) {
     }
   };
 
-  if (loading)
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[#FDFCFB]">
-        <div className="text-slate-300 text-sm uppercase tracking-widest">
-          Loading...
-        </div>
-      </div>
-    );
+  if (loading) return <Loader />;
 
   if (!property)
     return (

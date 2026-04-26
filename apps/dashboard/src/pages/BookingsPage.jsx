@@ -7,6 +7,7 @@ import {
   XCircle,
   ChevronDown,
 } from "lucide-react";
+import Loader from '../components/Loader'
 
 // ── Status Badge ──────────────────────────────────────────────────────────────
 const StatusBadge = ({ status }) => {
@@ -180,12 +181,7 @@ export default function BookingsPage() {
     cancelled: bookings.filter((b) => b.status === "cancelled").length,
   };
 
-  if (loading)
-    return (
-      <div className="p-8 flex items-center justify-center h-full">
-        <div className="text-slate-400">Loading bookings...</div>
-      </div>
-    );
+if (loading) return <Loader />
 
   return (
     <div className="p-8">

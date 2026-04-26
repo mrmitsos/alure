@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { Mountain, Waves, SlidersHorizontal, X } from "lucide-react";
 import api from "@/lib/axios";
 import PropertyCard from "./PropertyCard";
+import Loader from "./Loader";
 
 interface Props {
   brand: "skiAlure" | "seaAlure";
@@ -61,6 +62,8 @@ export default function ListingsPage({ brand }: Props) {
       p.title.toLowerCase().includes(search.toLowerCase()) ||
       p.location?.city?.toLowerCase().includes(search.toLowerCase()),
   );
+
+  if (loading) return <Loader />;
 
   return (
     <div
@@ -176,6 +179,10 @@ export default function ListingsPage({ brand }: Props) {
       {/* Properties Grid */}
       <div className="max-w-6xl mx-auto px-4 py-12">
         {loading ? (
+          <div className="text-center text-slate-400 py-20">
+            Loading properties...
+          </div>
+        ) : loading ? (
           <div className="text-center text-slate-400 py-20">
             Loading properties...
           </div>

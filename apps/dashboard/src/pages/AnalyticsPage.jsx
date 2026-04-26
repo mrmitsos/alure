@@ -17,6 +17,7 @@ import {
 } from "recharts";
 import { TrendingUp, Building2, BarChart3, Percent } from "lucide-react";
 import useAuthStore from "../store/authStore";
+import Loader from '../components/Loader'
 
 // ── Colours ───────────────────────────────────────────────────────────────────
 const SEA_COLOR = "#3b82f6";
@@ -94,12 +95,7 @@ export default function AnalyticsPage() {
     load();
   }, []);
 
-  if (loading)
-    return (
-      <div className="p-8 flex items-center justify-center h-full">
-        <div className="text-slate-400">Loading analytics...</div>
-      </div>
-    );
+if (loading) return <Loader />
 
   // Empty state helper
   const isEmpty = (arr) => !arr || arr.length === 0;

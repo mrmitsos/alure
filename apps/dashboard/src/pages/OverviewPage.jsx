@@ -1,54 +1,60 @@
-import { useEffect, useState } from 'react'
-import { Building2, CalendarCheck, Users, Clock, TrendingUp, DollarSign } from 'lucide-react'
-import api from '../lib/axios'
+import { useEffect, useState } from "react";
+import {
+  Building2,
+  CalendarCheck,
+  Users,
+  Clock,
+  TrendingUp,
+  DollarSign,
+} from "lucide-react";
+import api from "../lib/axios";
+import Loader from "../components/Loader";
 
 const StatCard = ({ title, value, icon: Icon, color, subtitle }) => (
   <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-100">
     <div className="flex items-center justify-between mb-4">
       <p className="text-slate-500 text-sm font-medium">{title}</p>
-      <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${color}`}>
+      <div
+        className={`w-10 h-10 rounded-lg flex items-center justify-center ${color}`}
+      >
         <Icon size={20} className="text-white" />
       </div>
     </div>
-    <p className="text-3xl font-bold text-slate-800">{value ?? '—'}</p>
+    <p className="text-3xl font-bold text-slate-800">{value ?? "—"}</p>
     {subtitle && <p className="text-slate-400 text-xs mt-1">{subtitle}</p>}
   </div>
-)
+);
 
 export default function OverviewPage() {
-  const [stats, setStats]     = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError]     = useState('')
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const { data } = await api.get('/analytics/overview')
-        setStats(data)
+        const { data } = await api.get("/analytics/overview");
+        setStats(data);
       } catch (err) {
-        setError('Failed to load stats')
+        setError("Failed to load stats");
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
-    fetchStats()
-  }, [])
+    };
+    fetchStats();
+  }, []);
 
-  if (loading) return (
-    <div className="p-8 flex items-center justify-center h-full">
-      <div className="text-slate-400">Loading...</div>
-    </div>
-  )
+  if (loading) return <Loader />;
 
-  if (error) return (
-    <div className="p-8">
-      <div className="bg-red-50 text-red-500 p-4 rounded-lg">{error}</div>
-    </div>
-  )
+  if (error)
+    return (
+      <div className="p-8">
+        <div className="bg-red-50 text-red-500 p-4 rounded-lg">{error}</div>
+      </div>
+    );
 
   return (
     <div className="p-8">
-
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-slate-800">Overview</h1>
@@ -89,14 +95,14 @@ export default function OverviewPage() {
         />
         <StatCard
           title="Total Revenue"
-          value={`€${stats?.revenue?.totalRevenue?.toFixed(2) ?? '0.00'}`}
+          value={`€${stats?.revenue?.totalRevenue?.toFixed(2) ?? "0.00"}`}
           icon={DollarSign}
           color="bg-emerald-500"
           subtitle="Gross revenue"
         />
         <StatCard
           title="Platform Fee Earned"
-          value={`€${stats?.revenue?.totalPlatformFee?.toFixed(2) ?? '0.00'}`}
+          value={`€${stats?.revenue?.totalPlatformFee?.toFixed(2) ?? "0.00"}`}
           icon={TrendingUp}
           color="bg-slate-500"
           subtitle="Your earnings"
@@ -109,16 +115,18 @@ export default function OverviewPage() {
         <div className="space-y-3">
           {stats?.pendingBookings > 0 ? (
             <p className="text-slate-500 text-sm">
-              You have <span className="text-amber-500 font-semibold">
-                {stats.pendingBookings} pending booking{stats.pendingBookings > 1 ? 's' : ''}
-              </span> waiting for confirmation.
+              You have{" "}
+              <span className="text-amber-500 font-semibold">
+                {stats.pendingBookings} pending booking
+                {stats.pendingBookings > 1 ? "s" : ""}
+              </span>{" "}
+              waiting for confirmation.
             </p>
           ) : (
             <p className="text-slate-400 text-sm">No pending activity.</p>
           )}
         </div>
       </div>
-
     </div>
-  )
+  );
 }
